@@ -21,12 +21,12 @@
     
     function pageCheck() {
     	let pageSize = document.getElementById("pageSize").value;
-    	location.href = "${ctp}/guest/guestList?pag=${pag}&pageSize="+pageSize;
+    	location.href = "${ctp}/guest/guestList?pag=${pageVO.pag}&pageSize="+pageSize;
     }
     
     function delCheck(idx) {
     	let ans = confirm("현재 게시물을 삭제하시겠습니까?");
-    	if(ans) location.href = "${ctp}/GuestDelete.gu?idx="+idx;
+    	if(ans) location.href = "${ctp}/guest/guestDelete?idx="+idx;
     }
   </script>
 </head>
@@ -48,27 +48,28 @@
     <tr>
       <td>
         <select name="pageSize" id="pageSize" onchange="pageCheck()">
-          <option <c:if test="${pageSize == 3}">selected</c:if>>3</option>
-          <option <c:if test="${pageSize == 5}">selected</c:if>>5</option>
-          <option <c:if test="${pageSize == 10}">selected</c:if>>10</option>
-          <option <c:if test="${pageSize == 15}">selected</c:if>>15</option>
-          <option <c:if test="${pageSize == 20}">selected</c:if>>20</option>
+          <option <c:if test="${pageVO.pageSize == 3}">selected</c:if>>3</option>
+          <option <c:if test="${pageVO.pageSize == 5}">selected</c:if>>5</option>
+          <option <c:if test="${pageVO.pageSize == 10}">selected</c:if>>10</option>
+          <option <c:if test="${pageVO.pageSize == 15}">selected</c:if>>15</option>
+          <option <c:if test="${pageVO.pageSize == 20}">selected</c:if>>20</option>
         </select> 건
       </td>
       <td class="text-right">
         <!-- 첫페이지 / 이전페이지 / (현재페이지번호/총페이지수) / 다음페이지 / 마지막페이지 -->
-        <c:if test="${pag > 1}">
-          <a href="${ctp}/guest/guestList?pageSize=${pageSize}&pag=1" title="첫페이지로">◁◁</a>
-          <a href="${ctp}/guest/guestList?pageSize=${pageSize}&pag=${pag-1}" title="이전페이지로">◀</a>
+        <c:if test="${pageVO.pag > 1}">
+          <a href="${ctp}/guest/guestList?pageSize=${pageVO.pageSize}&pag=1" title="첫페이지로">◁◁</a>
+          <a href="${ctp}/guest/guestList?pageSize=${pageVO.pageSize}&pag=${pageVO.pag-1}" title="이전페이지로">◀</a>
         </c:if>
-        ${pag}/${totPage}
-        <c:if test="${pag < totPage}">
-          <a href="${ctp}/guest/guestList?pageSize=${pageSize}&pag=${pag+1}" title="다음페이지로">▶</a>
-          <a href="${ctp}/guest/guestList?pageSize=${pageSize}&pag=${totPage}" title="마지막페이지로">▷▷</a>
+        ${pageVO.pag}/${pageVO.totPage}
+        <c:if test="${pageVO.pag < pageVO.totPage}">
+          <a href="${ctp}/guest/guestList?pageSize=${pageVO.pageSize}&pag=${pageVO.pag+1}" title="다음페이지로">▶</a>
+          <a href="${ctp}/guest/guestList?pageSize=${pageVO.pageSize}&pag=${pageVO.totPage}" title="마지막페이지로">▷▷</a>
         </c:if>
       </td>
     </tr>
   </table>
+  <c:set var="curScrStartNo" value="${pageVO.curScrStartNo}" />
   <c:forEach var="vo" items="${vos}" varStatus="st">
 	  <table class="table table-borderless mb-0 mt-0">
 	    <tr>
@@ -110,20 +111,56 @@
 	  <br/>
 	  <c:set var="curScrStartNo" value="${curScrStartNo - 1}"/>
   </c:forEach>
-  <br/>			<!-- 4페이지(1블록)에서 0블록으로 가게되면 현재페이지는 1페이지가 블록의 시작페이지가 된다. -->
+  <br/>
+  
+  <!-- [ Start ] 페이징 처리 4페이지(1블록)에서 0블록으로 가게되면 현재페이지는 1페이지가 블록의 시작페이지가 된다. -->
   <!-- 첫페이지 / 이전블록 / 1(4) 2(5) 3 / 다음블록 / 마지막페이지 -->
   <div class="text-center">
 	  <ul class="pagination justify-content-center">
-	    <c:if test="${pag > 1}"><li class="page-item"><a class="page-link text-secondary" href="${ctp}/guest/guestList?pageSize=${pageSize}&pag=1">첫페이지</a></li></c:if>
-	    <c:if test="${curBlock > 0}"><li class="page-item"><a class="page-link text-secondary" href="${ctp}/guest/guestList?pageSize=${pageSize}&pag=${(curBlock-1)*blockSize + 1}">이전블록</a></li></c:if>
-	    <c:forEach var="i" begin="${curBlock*blockSize + 1}" end="${curBlock*blockSize + blockSize}" varStatus="st">
-	      <c:if test="${i <= totPage && i == pag}"><li class="page-item active"><a class="page-link text-white bg-secondary border-secondary" href="${ctp}/guest/guestList?pageSize=${pageSize}&pag=${i}">${i}</a></li></c:if>
-	      <c:if test="${i <= totPage && i != pag}"><li class="page-item"><a class="page-link text-secondary" href="${ctp}/guest/guestList?pageSize=${pageSize}&pag=${i}">${i}</a></li></c:if>
+	    <c:if test="${pageVO.pag > 1}">
+	    	<li class="page-item">
+	    		<a class="page-link text-secondary" href="${ctp}/guest/guestList?pageSize=${pageVO.pageSize}&pag=1">
+	    			<i class="fa fa-angle-double-left" aria-hidden="true"></i>
+	    		</a>
+	    	</li>
+	    </c:if>
+	    <c:if test="${pageVO.curBlock > 0}">
+	    	<li class="page-item">
+	    		<a class="page-link text-secondary" href="${ctp}/guest/guestList?pageSize=${pageVO.pageSize}&pag=${(pageVO.curBlock-1)*pageVO.blockSize + 1}">
+	    			<i class="fa fa-angle-left" aria-hidden="true"></i>
+	    		</a>
+	    	</li>
+	    </c:if>
+	    <c:forEach var="i" begin="${pageVO.curBlock*pageVO.blockSize + 1}" end="${pageVO.curBlock*pageVO.blockSize + pageVO.blockSize}" varStatus="st">
+	      <c:if test="${i <= pageVO.totPage && i == pageVO.pag}">
+	      	<li class="page-item active">
+	      		<a class="page-link text-white bg-secondary border-secondary" href="${ctp}/guest/guestList?pageSize=${pageVO.pageSize}&pag=${i}">${i}</a>
+	      	</li>
+	      </c:if>
+	      <c:if test="${i <= pageVO.totPage && i != pageVO.pag}">
+	      	<li class="page-item">
+	      		<a class="page-link text-secondary" href="${ctp}/guest/guestList?pageSize=${pageVO.pageSize}&pag=${i}">${i}</a>
+	      	</li>
+	      </c:if>
 	    </c:forEach>
-	    <c:if test="${curBlock < lastBlock}"><li class="page-item"><a class="page-link text-secondary" href="${ctp}/guest/guestList?pageSize=${pageSize}&pag=${(curBlock+1)*blockSize + 1}">다음블록</a></li></c:if>
-	    <c:if test="${pag < totPage}"><li class="page-item"><a class="page-link text-secondary" href="${ctp}/guest/guestList?pageSize=${pageSize}&pag=${totPage}">마지막페이지</a></li></c:if>
+	    <c:if test="${pageVO.curBlock < pageVO.lastBlock}">
+	    	<li class="page-item">
+	    		<a class="page-link text-secondary" href="${ctp}/guest/guestList?pageSize=${pageVO.pageSize}&pag=${(pageVO.curBlock+1)*pageVO.blockSize + 1}">
+	    			<i class="fa fa-angle-right" aria-hidden="true"></i>
+	    		</a>
+	    	</li>
+	    </c:if>
+	    <c:if test="${pageVO.pag < pageVO.totPage}">
+	    	<li class="page-item">
+	    		<a class="page-link text-secondary" href="${ctp}/guest/guestList?pageSize=${pageVO.pageSize}&pag=${pageVO.totPage}">
+	    		<i class="fa fa-angle-double-right" aria-hidden="true"></i>
+	    		</a>
+	    	</li>
+	    </c:if>
 	  </ul>
   </div>
+	<!-- [ End ] 페이지 -->
+	
 </div>
 <jsp:include page="/WEB-INF/views/include/footer.jsp" />
 </body>

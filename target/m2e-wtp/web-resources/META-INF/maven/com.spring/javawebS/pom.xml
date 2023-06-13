@@ -134,21 +134,18 @@
 		    <artifactId>spring-jdbc</artifactId>
 		    <version>${org.springframework-version}</version>
 		</dependency>
-
 		<!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
 		<dependency>
 		    <groupId>mysql</groupId>
 		    <artifactId>mysql-connector-java</artifactId>
 		    <version>5.1.38</version>
 		</dependency>
-		
 		<!-- https://mvnrepository.com/artifact/org.mybatis/mybatis -->
 		<dependency>
 	    <groupId>org.mybatis</groupId>
 	    <artifactId>mybatis</artifactId>
 	    <version>3.5.6</version>
 		</dependency>
-		
 		<!-- https://mvnrepository.com/artifact/org.mybatis/mybatis-spring -->
 		<dependency>
 	    <groupId>org.mybatis</groupId>
@@ -185,7 +182,6 @@
 		    <artifactId>jackson-databind</artifactId>
 		    <version>2.14.2</version>
 		</dependency>
-		
 		<!-- https://mvnrepository.com/artifact/org.codehaus.jackson/jackson-mapper-asl -->
 		<dependency>
 	    <groupId>org.codehaus.jackson</groupId>
@@ -193,6 +189,21 @@
 	    <version>1.9.13</version>
 		</dependency>
 		<!-- [End] aJax 처리를 위한 라이브러리 -->
+
+		<!-- [ Strart SMTP를 이용한 java web mail 서비스 라이브러리 주입 (2개) -->
+		<!-- https://mvnrepository.com/artifact/javax.mail/mail -->
+		<dependency>
+		    <groupId>javax.mail</groupId>
+		    <artifactId>mail</artifactId>
+		    <version>1.4.7</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.springframework/spring-context-support -->
+		<dependency>
+		    <groupId>org.springframework</groupId>
+		    <artifactId>spring-context-support</artifactId>
+		    <version>5.3.18</version>
+		</dependency>
+		<!-- [ End ] SMTP -->
 		
 		      
 	</dependencies>
