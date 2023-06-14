@@ -250,24 +250,18 @@ public class MemberController {
 		return "member/memberIdFind";
 	}
 	@RequestMapping(value = "/memberIdFind", method = RequestMethod.POST)
-	public String memberIdFindPost(String nickName, String toMail,
-			Model model
-			) {
-		MemberVO vo = memberService.getMemberNickCheck(nickName);
-		
-		if(vo != null) {
-			if(vo.getEmail().equals(toMail) && vo.getNickName().equals(nickName)) {
-				// 회원정보가 맞다면 변수에 담아서 뷰에 출력 한다.
-				model.addAttribute("mid",vo.getMid());
-				return "member/memberIdFind";
-			}
-			else {
-				// 정보가 없다면 메세지 출력
-				return "redirect:/message/memberIdFindNo";
-			}
-		}
-		else {
-			return "redirect:/message/memberIdFindNo";
-		}
+	public String memberIdFindPost(@RequestParam("nickName") String nickName,
+	                               @RequestParam("toMail") String toMail,
+	                               Model model) {
+    MemberVO vo = memberService.getMemberNickCheck(nickName);
+
+    if (vo != null && vo.getEmail().equals(toMail) && vo.getNickName().equals(nickName)) {
+        // 회원정보가 맞다면 변수에 담아서 뷰에 출력합니다.
+        model.addAttribute("mid", vo.getMid());
+        return "member/memberIdFind";
+    } else {
+        // 정보가 없거나 일치하지 않을 경우 메세지 출력
+        return "redirect:/message/memberIdFindNo";
+    }
 	}
 }
