@@ -1,14 +1,21 @@
 package com.spring.javawebS;
 
+import java.util.UUID;
+
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
-import org.springframework.validation.BindingResult;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -26,6 +33,9 @@ public class MemberController {
 	
 	@Autowired
 	BCryptPasswordEncoder passwordEncoder;
+	
+	@Autowired
+	JavaMailSender mailSender;
 	
 	@RequestMapping(value = "/memberLogin", method = RequestMethod.GET)
 	public String memberLoginGet(HttpServletRequest request) {
@@ -86,6 +96,15 @@ public class MemberController {
 		}
 	}
 	
+	@RequestMapping(value = "/memberLogout", method = RequestMethod.GET)
+	public String memberLogoutGet(HttpSession session) {
+		String mid = (String) session.getAttribute("sMid");
+		
+		session.invalidate();
+		
+		return "redirect:/message/memberLogout?mid="+mid;
+	}
+	
 	@RequestMapping(value = "/memberJoin", method = RequestMethod.GET)
 	public String memberJoinGet() {
 		return "member/memberJoin";
@@ -130,7 +149,125 @@ public class MemberController {
 	}
 	
 	@RequestMapping(value = "/memberMain", method = RequestMethod.GET)
-	public String memberMain() {
+	public String memberMainGet() {
 		return "member/memberMain";
+	}
+	
+	@RequestMapping(value = "/memberPwdFind", method = RequestMethod.GET)
+	public String memberPwdFindGet() {
+		return "member/memberPwdFind";
+	}
+	
+	@RequestMapping(value = "/memberPwdFind", method = RequestMethod.POST)
+	public String memberPwdFindPost(String mid, String toMail, HttpServletRequest request) throws MessagingException {
+		MemberVO vo = memberService.getMemberIdCheck(mid);
+		if(vo != null) {
+			if(vo.getEmail().equals(toMail)) {
+				// 회원정보가 맞다면 임시비밀번호를 발급받는다.(8자리)
+				UUID uid = UUID.randomUUID();
+				String pwd = uid.toString().substring(0,8);
+				
+				// 회원이 임시비밀번호를 변경처리할 수 있도록 유도하기위해 임시세션1개를 생성해준다.
+				HttpSession session = request.getSession();
+				session.setAttribute("sImsiPwd", pwd);
+				
+				// 발급받은 임시비밀번호를 암호화처리시켜서 DB에 저장한다.
+				memberService.setMemberPwdUpdate(mid, passwordEncoder.encode(pwd));
+				
+				// 저정된 임시비밀번호를 메일로 전송처리한다.
+				String content = pwd;
+				int res = mailSend(toMail, content);
+				
+				if(res == 1) return "redirect:/message/memberImsiPwdOk";
+				else return "redirect:/message/memberImsiPwdNo";
+			}
+			else {
+				return "redirect:/message/memberEmailCheckNo";
+			}
+		}
+		else {
+			return "redirect:/message/memberIdCheckNo";
+		}
+	}
+
+	// 임시비밀번호를 메일로 전송처리한다.
+	private int mailSend(String toMail, String content) throws MessagingException {
+		String title = "임시 비밀번호를 발급하였습니다.";
+		
+		// 메일 전송을 위한 객체 : MimeMessage(), MimeMessageHelper()
+		MimeMessage message = mailSender.createMimeMessage();
+		MimeMessageHelper messageHelper = new MimeMessageHelper(message, true, "UTF-8");
+		
+		// 메일보관함에 회원이 보내온 메세지들의 정보를 모두 저장시킨후 작업처리하자...
+		messageHelper.setTo(toMail);
+		messageHelper.setSubject(title);
+		messageHelper.setText(content);
+		
+		// 메세지 보관함의 내용(content)에 필요한 정보를 추가로 담아서 전송시킬수 있도록 한다.
+	
+		content += "<br><hr><h3>임시 비밀번호는 <font color='red'>"+content+"</font></h3><hr><br>";
+		content += "<p><img src=\"cid:main.jpg\" width='500px'></p>";
+		content += "<p>방문하기 : <a href='http://49.142.157.251:9090/cjgreen/'>CJ Green프로젝트</a></p>";
+		content += "<hr>";
+		messageHelper.setText(content, true);
+		
+		// 본문에 기재된 그림파일의 경로를 별도로 표시시켜준다. 그런후, 다시 보관함에 담아준다.
+		FileSystemResource file = new FileSystemResource("D:\\javaweb\\springframework\\works\\javawebS\\src\\main\\webapp\\resources\\images\\main.jpg");
+		messageHelper.addInline("main.jpg", file);
+
+		// 메일 전송하기
+		mailSender.send(message);
+		
+		return 1;
+	}
+	
+	@RequestMapping(value = "/memberPwdUpdate", method = RequestMethod.GET)
+	public String memberPwdUpdateGet(HttpSession session, String pwdFlag) {
+		if(!pwdFlag.equals("")) session.setAttribute("sPwdFlag", "pwdFlag");
+		return "member/memberPwdUpdate";
+	}
+	
+	@RequestMapping(value = "/memberPwdUpdate", method = RequestMethod.POST)
+	public String memberPwdUpdatePost(
+			@RequestParam(name="mid",defaultValue = "", required=false) String mid,
+			@RequestParam(name="pwd",defaultValue = "", required=false) String pwd,
+			@RequestParam(name="newPwd",defaultValue = "", required=false) String newPwd,
+			HttpSession session) {
+		String currentPwd = memberService.getMemberIdCheck(mid).getPwd();
+		String prePwd = passwordEncoder.encode(pwd);
+		
+		if(currentPwd.equals(prePwd)) return "redirect:/message/memberPwdNewCheckNo";
+		
+		memberService.setMemberPwdUpdate(mid, newPwd);
+		
+		if(session.getAttribute("sImsiPwd") != null) session.removeAttribute("sImsiPwd");
+		
+		return "redirect:/message/memberPwdUpdateOk";
+	}
+	
+	@RequestMapping(value = "/memberIdFind", method = RequestMethod.GET)
+	public String memberIdFindGet() {
+		return "member/memberIdFind";
+	}
+	@RequestMapping(value = "/memberIdFind", method = RequestMethod.POST)
+	public String memberIdFindPost(String nickName, String toMail,
+			Model model
+			) {
+		MemberVO vo = memberService.getMemberNickCheck(nickName);
+		
+		if(vo != null) {
+			if(vo.getEmail().equals(toMail) && vo.getNickName().equals(nickName)) {
+				// 회원정보가 맞다면 변수에 담아서 뷰에 출력 한다.
+				model.addAttribute("mid",vo.getMid());
+				return "member/memberIdFind";
+			}
+			else {
+				// 정보가 없다면 메세지 출력
+				return "redirect:/message/memberIdFindNo";
+			}
+		}
+		else {
+			return "redirect:/message/memberIdFindNo";
+		}
 	}
 }

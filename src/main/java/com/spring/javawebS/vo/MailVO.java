@@ -7,5 +7,4 @@ public class MailVO {
 	private String toMail;
 	private String title;
 	private String content;
-	
 }

@@ -313,47 +313,23 @@
 	    </div>
     </div>
 		
-		<!-- 
 		<div class="form-group">
 		  <label for="address">주소</label>
 	    <div class="input-group mb-3">
 			  <div class="input-group-prepend">
 			    <button class="btn btn-outline-primary" type="button" onclick="sample6_execDaumPostcode()">우편번호 찾기</button>
 			  </div>
-			  <input type="text" name="postcode" id="sample6_postcode" placeholder="우편번호" class="form-control">
+			  <input type="text" name="postcode" id="sample6_postcode" placeholder="우편번호" class="form-control col-3">
 			</div>
 			<input type="text" name="roadAddress" id="sample6_address" size="50" placeholder="주소" class="form-control mb-1">
-			
+			<div class="form-row">
 	      <div class="col">
-	        <input type="text" name="tel2" class="form-control" />
-	      </div>
-	      <div class="col">
-	        <input type="text" name="tel3" class="form-control" />
-	      </div>
-	    </div>
-    </div>
-    
-		 -->
-		
-		
-    <div class="form-group">
-      <label for="address">주소</label>
-      <!-- <input type="hidden" name="address" id="address"> -->
-      <div class="input-group mb-1">
-        <input type="text" name="postcode" id="sample6_postcode" placeholder="우편번호" class="form-control">
-        <div class="input-group-append">
-          <input type="button" onclick="sample6_execDaumPostcode()" value="우편번호 찾기" class="btn btn-secondary">
-        </div>
-      </div>
-      <input type="text" name="roadAddress" id="sample6_address" size="50" placeholder="주소" class="form-control mb-1">
-      <div class="mb-1 row">
-        <div class="col">
-	        <input type="text" name="extraAddress" id="sample6_extraAddress" placeholder="참고항목" class="form-control">
+	        <input type="text" name="extraAddress" id="sample6_extraAddress" placeholder="상세주소" class="form-control">
         </div>
         <div class="col">
 	        <input type="text" name="detailAddress" id="sample6_detailAddress" placeholder="상세주소" class="form-control">
         </div>
-      </div>
+	    </div>
     </div>
     
     <div class="form-group">

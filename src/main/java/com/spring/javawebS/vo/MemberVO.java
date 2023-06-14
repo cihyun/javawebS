@@ -28,7 +28,6 @@ public class MemberVO {
 	private String lastDate;
 	private int todayCnt;
 	
-	private int deleteDiff;
 	private String hobbys;
-	
+	private int deleteDiff;
 }

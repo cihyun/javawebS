@@ -16,5 +16,4 @@ public interface GuestDAO {
 
 	public int setGuestDelete(@Param("idx") int idx);
 
-
 }
